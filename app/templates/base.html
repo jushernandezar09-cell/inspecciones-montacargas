@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name if app_name else "Electroplast · Inspecciones Monta Cargas" }}{% endblock %}</title>
+    <style>
+        /*
+         * CSS propio, sin depender de ningún servicio externo (sin CDN de
+         * fuentes ni de frameworks). A propósito: esta pantalla reemplaza un
+         * documento controlado/auditable y una planta puede tener acceso a
+         * internet limitado — la app debe verse igual siempre, sin importar
+         * si algún dominio externo está bloqueado o lento.
+         */
+        :root {
+            --brand-50:#eef6f6; --brand-100:#d3e9e8; --brand-500:#2f8d89;
+            --brand-600:#25706d; --brand-700:#1c5453;
+            --ink-900:#0f172a; --ink-700:#334155; --ink-500:#64748b;
+            --bg:#f4f6f7;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink-900);
+            font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--brand-700); }
+        .btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            font-size: .85rem; font-weight: 600; padding: .5rem .9rem;
+            border-radius: .5rem; border: 1px solid #cbd5e1; background: #fff;
+            color: var(--ink-700); cursor: pointer; text-decoration: none;
+        }
+        .btn:hover { background: #f8fafc; }
+        .btn-primary { background: var(--brand-600); border-color: var(--brand-600); color: #fff; }
+        .btn-primary:hover { background: var(--brand-700); }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+        .campo-texto {
+            width: 100%; border: 1px solid #cbd5e1; border-radius: .5rem;
+            padding: .5rem .7rem; font-size: .9rem; font-family: inherit;
+        }
+        .campo-texto:focus { outline: 2px solid var(--brand-500); border-color: var(--brand-500); }
+        label.etiqueta { display:block; font-size:.85rem; font-weight:600; color:var(--ink-700); margin-bottom:.25rem; }
+        .aviso-entorno {
+            display:inline-block; font-size:.7rem; text-transform:uppercase; letter-spacing:.03em;
+            background:#fef3c7; color:#92400e; border-radius:999px; padding:.2rem .6rem; font-weight:600;
+        }
+        {% block estilos_extra %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% block body %}{% endblock %}
+</body>
+</html>

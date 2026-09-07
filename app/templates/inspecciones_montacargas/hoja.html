@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}{{ documento.codigo }} · {{ codigo_equipo }} · {{ mes_nombre }} {{ anio }}{% endblock %}
+{% block estilos_extra %}
+    /* Todo lo de este bloque es CSS propio (sin Tailwind ni ningún CDN)
+       a propósito: este bloque reproduce el documento controlado, y debe
+       verse igual siempre, sin depender de que un recurso externo cargue. */
+    .contenedor-hoja { max-width: 1600px; margin: 0 auto; padding: 1rem .75rem; }
+    table.doc-info { width:100%; border-collapse:collapse; font-size:.78rem; margin-bottom:.5rem; }
+    table.doc-info td { border:1px solid #000; padding:.3rem .5rem; vertical-align:middle; }
+    table.doc-info td.celda-titulo { text-align:center; font-weight:700; text-transform:uppercase; }
+    table.doc-info td.celda-etiqueta { font-weight:600; }
+    table.doc-info td.celda-valor-centrada { text-align:center; white-space:nowrap; }
+    table.doc-info td.celda-etiqueta { white-space:nowrap; }
+    .caja-doc { border:1px solid #000; padding:.5rem; font-size:.85rem; margin-bottom:.5rem; display:flex; flex-wrap:wrap; gap:.4rem 1.5rem; align-items:center; }
+    .caja-doc .cambiar { margin-left:auto; font-size:.75rem; }
+    .caja-instrucciones { border:1px solid #000; padding:.5rem; font-size:.78rem; margin-bottom:.75rem; display:flex; flex-wrap:wrap; gap:.4rem; }
+    .barra-herramientas { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; margin-bottom:.75rem; }
+    .barra-herramientas .nota { font-size:.75rem; color:var(--ink-500); margin-left:auto; }
+    .envoltorio-tabla { overflow-x:auto; border:1px solid #000; }
+    .pie-doc { font-size:.7rem; color:var(--ink-500); margin-top:.5rem; }
+
+    table.hoja-tabla { border-collapse: collapse; }
+    table.hoja-tabla th, table.hoja-tabla td {
+        border: 1px solid #000;
+        font-size: 11px;
+        line-height: 1.15;
+        padding: 2px 3px;
+        vertical-align: middle;
+    }
+    table.hoja-tabla thead th { background: #d9d9d9; font-weight: 600; text-align: center; }
+    table.hoja-tabla thead tr.fila-grupos th { background: #bfbfbf; }
+    table.hoja-tabla td.dia-cell, table.hoja-tabla td.turno-cell {
+        text-align: center; font-weight: 600; background: #fff;
+        position: sticky; z-index: 2;
+    }
+    table.hoja-tabla td.dia-cell { left: 0; min-width: 28px; }
+    table.hoja-tabla td.turno-cell { left: 28px; min-width: 30px; }
+    table.hoja-tabla thead th.dia-cell, table.hoja-tabla thead th.turno-cell { position: sticky; left: 0; z-index: 3; }
+    table.hoja-tabla thead th.turno-cell { left: 28px; }
+    table.hoja-tabla .campo-input {
+        width: 100%; min-width: 62px; border: none; background: transparent;
+        font-size: 11px; text-align: center; padding: 1px;
+    }
+    table.hoja-tabla input.campo-input[type="text"], table.hoja-tabla input.campo-input[type="date"] { text-align: center; }
+    table.hoja-tabla td:has(input[data-campo="responsable_revision"]) .campo-input,
+    table.hoja-tabla td:has(input[data-campo="responsable_correccion"]) .campo-input { text-align: left; min-width: 110px; }
+    table.hoja-tabla .campo-input:focus { outline: 2px solid #2f8d89; background: #eef6f6; }
+    tr.fila-inspeccion.fila-guardando td { background: #fffbeb; }
+    tr.fila-inspeccion.fila-guardada-ok td { background: #ecfdf5; transition: background 1.2s ease; }
+    tr.fila-inspeccion.fila-error td { background: #fef2f2; }
+
+    @media print {
+        .no-print { display: none !important; }
+        body { background: #fff; }
+        table.hoja-tabla td.dia-cell, table.hoja-tabla td.turno-cell,
+        table.hoja-tabla thead th.dia-cell, table.hoja-tabla thead th.turno-cell { position: static; }
+        .campo-input { border: none !important; }
+    }
+{% endblock %}
+{% block body %}
+<div class="contenedor-hoja">
+
+    <!-- Encabezado del documento controlado: igual que el PDF, no editable -->
+    <table class="doc-info">
+        <tbody>
+            <tr>
+                <td rowspan="4" style="width:120px; text-align:center;">
+                    <img src="/static/img/logo_electroplast.png" alt="ElectroPlast" style="max-height:40px">
+                </td>
+                <td colspan="2" class="celda-titulo">{{ documento.titulo }}</td>
+                <td class="celda-etiqueta" style="width:6rem">Pagina</td>
+                <td class="celda-valor-centrada" style="width:6rem">{{ documento.pagina }}</td>
+            </tr>
+            <tr>
+                <td class="celda-etiqueta" style="width:10rem">Modificado por:</td>
+                <td>{{ documento.modificado_por }}</td>
+                <td class="celda-etiqueta">Codigo</td>
+                <td class="celda-valor-centrada">{{ documento.codigo }}</td>
+            </tr>
+            <tr>
+                <td class="celda-etiqueta">Revisado por:</td>
+                <td>{{ documento.revisado_por }}</td>
+                <td class="celda-etiqueta">Emision</td>
+                <td class="celda-valor-centrada">{{ documento.emision }}</td>
+            </tr>
+            <tr>
+                <td class="celda-etiqueta">Aprobado por:</td>
+                <td>{{ documento.aprobado_por }}</td>
+                <td class="celda-etiqueta">Ultima Revision</td>
+                <td class="celda-valor-centrada">{{ documento.ultima_revision }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="caja-doc">
+        <span><strong>Codigo del equipo:</strong> {{ codigo_equipo }}</span>
+        <span><strong>Mes:</strong> {{ mes_nombre }}</span>
+        <span><strong>Año:</strong> {{ anio }}</span>
+        <a href="/" class="cambiar no-print">← Cambiar equipo / mes / año</a>
+    </div>
+
+    <div class="caja-instrucciones">
+        <strong style="flex-shrink:0">INSTRUCCIONES:</strong>
+        <span>{{ documento.instrucciones }}</span>
+    </div>
+
+    <!-- Barra de herramientas (no forma parte del documento, no se imprime) -->
+    <div class="barra-herramientas no-print">
+        <button onclick="recargarDatos()" class="btn">🔄 Recargar</button>
+        <button onclick="window.print()" class="btn">🖨️ Imprimir</button>
+        <span id="estado-guardado" style="font-size:.75rem; color:var(--ink-500)"></span>
+        <span class="nota">Los cambios se guardan solos, fila por fila, al salir de cada casilla.</span>
+    </div>
+
+    <div class="envoltorio-tabla">
+        <table class="hoja-tabla" style="width:100%">
+            <thead>
+                <tr class="fila-grupos">
+                    <th colspan="3">Datos</th>
+                    <th colspan="6">Mecanica</th>
+                    <th colspan="4">Cabina Montacargas</th>
+                    <th colspan="3">Seguridad</th>
+                    <th colspan="3">Estado de correccion</th>
+                </tr>
+                <tr>
+                    <th class="dia-cell">Dia</th>
+                    <th class="turno-cell">Turno</th>
+                    <th style="min-width:110px">Responsable de revision</th>
+                    {% for grupo in grupos_checklist %}
+                        {% for col in grupo.columnas %}
+                        <th style="min-width:90px">{{ col.etiqueta }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for diaObj in dias %}
+                    {% for turnoObj in diaObj.turnos %}
+                    <tr class="fila-inspeccion" data-dia="{{ diaObj.dia }}" data-turno="{{ turnoObj.turno }}">
+                        {% if loop.first %}<td rowspan="2" class="dia-cell">{{ diaObj.dia }}</td>{% endif %}
+                        <td class="turno-cell">{{ turnoObj.turno }}</td>
+                        <td><input type="text" class="campo-input" data-campo="responsable_revision" value="{{ turnoObj.responsable_revision }}"></td>
+                        {% for grupo in grupos_checklist %}
+                            {% for col in grupo.columnas %}
+                            <td>
+                                {% if col.tipo == 'si_no' %}
+                                <select class="campo-input" data-campo="{{ col.clave }}">
+                                    <option value=""{{ ' selected' if turnoObj.valores[col.clave] == '' else '' }}></option>
+                                    {% for op in opciones_si_no %}
+                                    <option value="{{ op }}"{{ ' selected' if turnoObj.valores[col.clave] == op else '' }}>{{ op }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% elif col.tipo == 'numero' %}
+                                <input type="text" inputmode="decimal" class="campo-input" data-campo="{{ col.clave }}" value="{{ turnoObj.valores[col.clave] }}">
+                                {% elif col.tipo == 'fecha' %}
+                                <input type="date" class="campo-input" data-campo="{{ col.clave }}" value="{{ turnoObj.valores[col.clave] }}">
+                                {% else %}
+                                <input type="text" class="campo-input" data-campo="{{ col.clave }}" value="{{ turnoObj.valores[col.clave] }}">
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="pie-doc no-print">{{ documento.codigo }} · Emisión {{ documento.emision }} · Última revisión {{ documento.ultima_revision }}</p>
+</div>
+
+<script>
+const CODIGO_EQUIPO = {{ codigo_equipo|tojson }};
+const MES = {{ mes }};
+const ANIO = {{ anio }};
+
+const estadoEl = document.getElementById("estado-guardado");
+let contadorPendientes = 0;
+
+function actualizarEstadoGlobal() {
+    if (contadorPendientes > 0) {
+        estadoEl.textContent = `Guardando ${contadorPendientes} cambio(s)…`;
+        estadoEl.style.color = "#b45309";
+    } else {
+        estadoEl.textContent = "Todo guardado ✓";
+        estadoEl.style.color = "#059669";
+        setTimeout(() => { if (contadorPendientes === 0) estadoEl.textContent = ""; }, 2500);
+    }
+}
+
+function recogerValoresFila(fila) {
+    const valores = {};
+    let responsable_revision = "";
+    fila.querySelectorAll("[data-campo]").forEach(el => {
+        if (el.dataset.campo === "responsable_revision") {
+            responsable_revision = el.value;
+        } else {
+            valores[el.dataset.campo] = el.value;
+        }
+    });
+    return {
+        codigo_equipo: CODIGO_EQUIPO,
+        anio: ANIO,
+        mes: MES,
+        dia: parseInt(fila.dataset.dia, 10),
+        turno: fila.dataset.turno,
+        responsable_revision,
+        valores,
+    };
+}
+
+async function guardarFila(fila, intento = 1) {
+    fila.classList.remove("fila-guardada-ok", "fila-error");
+    fila.classList.add("fila-guardando");
+    contadorPendientes++;
+    actualizarEstadoGlobal();
+
+    try {
+        const resp = await fetch("/hoja/fila", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(recogerValoresFila(fila)),
+        });
+        if (!resp.ok) throw new Error("respuesta no OK");
+        fila.classList.remove("fila-guardando");
+        fila.classList.add("fila-guardada-ok");
+        setTimeout(() => fila.classList.remove("fila-guardada-ok"), 1500);
+    } catch (err) {
+        fila.classList.remove("fila-guardando");
+        fila.classList.add("fila-error");
+        // Reintenta unas cuantas veces con espera creciente — común en
+        // plantas con wifi intermitente. Si sigue fallando, se queda
+        // marcada en rojo y se reintenta cuando el usuario use «Recargar».
+        if (intento < 5) {
+            setTimeout(() => guardarFila(fila, intento + 1), 1500 * intento);
+        }
+    } finally {
+        contadorPendientes--;
+        actualizarEstadoGlobal();
+    }
+}
+
+const temporizadoresPorFila = new Map();
+
+document.querySelectorAll("tr.fila-inspeccion").forEach(fila => {
+    fila.querySelectorAll("[data-campo]").forEach(el => {
+        el.addEventListener("change", () => {
+            clearTimeout(temporizadoresPorFila.get(fila));
+            temporizadoresPorFila.set(fila, setTimeout(() => guardarFila(fila), 400));
+        });
+    });
+});
+
+window.addEventListener("beforeunload", (e) => {
+    if (contadorPendientes > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
+});
+
+async function recargarDatos() {
+    estadoEl.textContent = "Recargando…";
+    estadoEl.style.color = "#64748b";
+    try {
+        const resp = await fetch(`/hoja/datos?codigo=${encodeURIComponent(CODIGO_EQUIPO)}&mes=${MES}&anio=${ANIO}`);
+        const datos = await resp.json();
+        document.querySelectorAll("tr.fila-inspeccion").forEach(fila => {
+            // No se toca una fila que el usuario está editando ahora mismo
+            // (tiene un guardado pendiente en curso) para no perder lo que escribió.
+            if (temporizadoresPorFila.has(fila)) return;
+            const clave = `${fila.dataset.dia}-${fila.dataset.turno}`;
+            const valores = datos[clave];
+            if (!valores) return;
+            fila.querySelectorAll("[data-campo]").forEach(el => {
+                const v = valores[el.dataset.campo];
+                if (v !== undefined && el.value !== v) el.value = v;
+            });
+        });
+        estadoEl.textContent = "Datos actualizados ✓";
+        estadoEl.style.color = "#059669";
+        setTimeout(() => { estadoEl.textContent = ""; }, 2000);
+    } catch (err) {
+        estadoEl.textContent = "No se pudo recargar (revisa tu conexión).";
+        estadoEl.style.color = "#dc2626";
+    }
+}
+</script>
+{% endblock %}

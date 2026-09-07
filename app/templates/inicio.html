@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }}{% endblock %}
+{% block estilos_extra %}
+    .pantalla-inicio { min-height:100vh; display:flex; align-items:center; justify-content:center; padding: 2.5rem 1rem; }
+    .caja-inicio { width:100%; max-width:28rem; }
+    .encabezado-inicio { text-align:center; margin-bottom:2rem; }
+    .encabezado-inicio img { height:2.5rem; margin:0 auto 1rem; display:block; }
+    .encabezado-inicio h1 { font-size:1.15rem; font-weight:700; margin:0; }
+    .encabezado-inicio p { font-size:.85rem; color:var(--ink-500); margin:.25rem 0 0; }
+    .form-inicio { padding:1.5rem; display:flex; flex-direction:column; gap:1rem; }
+    .fila-2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+    .nota-inicio { font-size:.75rem; color:var(--ink-500); text-align:center; margin:0; }
+{% endblock %}
+{% block body %}
+<div class="pantalla-inicio">
+    <div class="caja-inicio">
+        <div class="encabezado-inicio">
+            <img src="/static/img/logo_electroplast.png" alt="ElectroPlast">
+            <h1>{{ documento.titulo }}</h1>
+            <p>Documento {{ documento.codigo }} · Uso interno · Departamento de Mantenimiento</p>
+            {% if environment != "production" %}
+            <p><span class="aviso-entorno">entorno local</span></p>
+            {% endif %}
+        </div>
+
+        <form method="get" action="/hoja" class="card form-inicio">
+            <div>
+                <label class="etiqueta">Código del equipo</label>
+                <input type="text" name="codigo" list="lista-equipos" required autofocus
+                       placeholder="Ej. MC-01" class="campo-texto">
+                <datalist id="lista-equipos">
+                    {% for eq in equipos %}
+                    <option value="{{ eq }}">{{ eq }}</option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="fila-2">
+                <div>
+                    <label class="etiqueta">Mes</label>
+                    <select name="mes" required class="campo-texto">
+                        {% for nombre in meses %}
+                        <option value="{{ loop.index }}" {{ "selected" if loop.index == mes_actual else "" }}>{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="etiqueta">Año</label>
+                    <input type="number" name="anio" required value="{{ anio_actual }}" min="2000" max="2100" class="campo-texto">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="justify-content:center;">Abrir hoja de inspección</button>
+            <p class="nota-inicio">Si el equipo, mes y año ya tienen una hoja empezada, se abre con lo que ya se haya guardado. Si no, se abre en blanco.</p>
+        </form>
+    </div>
+</div>
+{% endblock %}

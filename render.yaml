@@ -1,0 +1,18 @@
+# Blueprint de Render: permite crear el servicio con "New +" -> "Blueprint"
+# apuntando a este repositorio, en vez de configurar todo a mano.
+# Después de crearlo, solo falta escribir el valor real de DATABASE_URL
+# (la de Supabase) en el panel de Render -> Environment, porque ese valor
+# es secreto y no se guarda en este archivo.
+services:
+  - type: web
+    name: inspecciones-montacargas
+    runtime: docker
+    plan: free
+    healthCheckPath: /salud
+    envVars:
+      - key: APP_NAME
+        value: "Electroplast · Inspecciones Monta Cargas"
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false   # se escribe a mano en Render (dato secreto de Supabase)
